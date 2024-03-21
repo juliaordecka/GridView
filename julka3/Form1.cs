@@ -8,23 +8,14 @@ namespace julka3
         {
             InitializeComponent();
 
-            // Inicjalizacja DataGridView
-            DataGridView dataGridView1 = new DataGridView();
-            dataGridView1.Dock = DockStyle.Fill;
-            // Utworzenie kolumn
-            dataGridView1.Columns.Add("Column1", "Column 1");
-            dataGridView1.Columns.Add("Column2", "Column 2");
-            // Dodanie danych do siatki
-            dataGridView1.Rows.Add(new object[] { "Data 1", "Value 1" });
-            dataGridView1.Rows.Add(new object[] { "Data 2", "Value 2" });
-            // Dodanie DataGridView do formularza
-            Controls.Add(dataGridView1);
-
         }
 
-            private void button1_Click(object sender, EventArgs e)
+        public int index = 1;
+
+
+        private void button1_Click(object sender, EventArgs e)
         {
-            Form2 f2 = new Form2();
+            Form2 f2 = new Form2(this);
             f2.ShowDialog();
         }
 
@@ -36,6 +27,16 @@ namespace julka3
         private void dataGridView1_CellContentClick(object sender, DataGridViewCellEventArgs e)
         {
 
+        }
+
+        public DataGridView GetDataGridView()
+        {
+            return dataGridView1;
+        }
+
+        private void button2_Click(object sender, EventArgs e)
+        {
+            dataGridView1.Rows.Remove(dataGridView1.SelectedRows[0]);
         }
     }
 }
