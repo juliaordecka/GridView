@@ -1,5 +1,11 @@
+using System;
 using System.Data;
 using System.Windows.Forms;
+using System.Xml.Serialization;
+using System.IO;
+using static julka3.Form1;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement;
+
 
 namespace julka3
 {
@@ -84,7 +90,7 @@ namespace julka3
             if (!File.Exists(filePath))
             {
                 MessageBox.Show("Plik CSV nie istnieje.", "B³¹d", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    return;
+                return;
             }
             // Odczytaj zawartoœæ pliku CSV
             string[] lines = File.ReadAllLines(filePath);
@@ -120,6 +126,108 @@ namespace julka3
                 // Wywo³anie funkcji wczytuj¹cej dane z pliku CSV
                 LoadCSVToDataGridView(openFileDialog1.FileName);
             }
+        }
+
+        ////////DODAWANIE KLASY OSOBA
+        [Serializable]
+        public class Osoba
+        {
+            public string Imie { get; set; }
+            public string Nazwisko { get; set; }
+            public int Wiek { get; set; }
+            public string Stanowisko { get; set; }
+            public int ID { get; set; }
+
+            /// Konstruktor klasy Osoba
+
+            public Osoba(string imie, string nazwisko, int wiek, string stanowisko, int id)
+            {
+                Imie = imie;
+                Nazwisko = nazwisko;
+                Wiek = wiek;
+                Stanowisko = stanowisko;
+                ID = id;
+            }
+
+            //konstruktor bezparametrowy
+            public bool IsInitialized;
+            public Osoba()
+            {
+                IsInitialized = true;
+            }
+
+
+            //SERIALIZACJA DO XML - jedna osoba
+            public void SerializeToXML(string fileName)
+            {
+                XmlSerializer serializer = new XmlSerializer(typeof(Osoba));
+                using (TextWriter writer = new StreamWriter(fileName))
+                {
+                    serializer.Serialize(writer, this);
+                }
+            }
+
+            //DESERIALIZACJA LISTY Z XML
+            public static List<Osoba> DeserializeFromXML(string fileName)
+            {
+                XmlSerializer serializer = new XmlSerializer(typeof(List<Osoba>));
+                using (TextReader reader = new StreamReader(fileName))
+                {
+                    List<Osoba> osoby = (List<Osoba>)serializer.Deserialize(reader);
+                    return osoby;
+                }
+            }
+
+            // Metoda do wyœwietlania informacji o osobie
+            public void DisplayInfo(DataGridView dataGridView)
+            {
+                int rowIndex = dataGridView.Rows.Add();
+
+                dataGridView.Rows[rowIndex].Cells[0].Value = Imie;
+                dataGridView.Rows[rowIndex].Cells[1].Value = Nazwisko;
+                dataGridView.Rows[rowIndex].Cells[2].Value = Wiek;
+                dataGridView.Rows[rowIndex].Cells[3].Value = Stanowisko;
+                dataGridView.Rows[rowIndex].Cells[4].Value = ID;
+
+            }
+
+        }
+
+        private void button5_Click(object sender, EventArgs e)
+        {
+            DataGridView dataGridView = dataGridView1;
+
+            List<Osoba> osoby = new List<Osoba>();
+            for (int i = 0; i < dataGridView1.Rows.Count - 1; i++)
+            {
+                string imie = dataGridView1.Rows[i].Cells[0].Value.ToString();
+                string nazwisko = dataGridView1.Rows[i].Cells[1].Value.ToString();
+                int wiek = Convert.ToInt32(dataGridView1.Rows[i].Cells[2].Value);
+                string stanowisko = dataGridView1.Rows[i].Cells[3].Value.ToString();
+                int id = Convert.ToInt32(dataGridView1.Rows[i].Cells[4].Value);
+                Osoba osoba = new Osoba(imie, nazwisko, wiek, stanowisko, id);
+                osoby.Add(osoba);
+            }
+
+            //serializacja listy osob
+            XmlSerializer serializer = new XmlSerializer(typeof(List<Osoba>));
+            using (TextWriter writer = new StreamWriter("osoby.xml"))
+            {
+                serializer.Serialize(writer, osoby);
+            }
+
+
+        }
+
+        //button do deserializacji listy osob
+        private void button6_Click(object sender, EventArgs e)
+        {
+            List<Osoba> osoby = Osoba.DeserializeFromXML("osoby.xml");
+            foreach (Osoba osoba in osoby)
+            {
+                osoba.DisplayInfo(dataGridView1);
+            }
+
         }
     }
 }
